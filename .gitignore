@@ -1,0 +1,28 @@
+# Secrets
+.env
+*.env
+*.env.txt
+!.env.example
+
+# Course data: both databases in data/ ARE committed so graders can run the app.
+# Only the original zip download is left out.
+data.zip
+
+# Installed tools and build output
+.venv/
+node_modules/
+frontend/dist/
+*.tsbuildinfo
+__pycache__/
+*.pyc
+
+# Editor / OS clutter
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Local editor/preview settings
+.claude/
+
+# Frontend local env
+frontend/.env

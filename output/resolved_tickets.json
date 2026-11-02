@@ -1,0 +1,121 @@
+{
+  "description": "Official Problem 9 run. The working database was reset to the original, then the agent team (gpt-6-luna via Portkey) ran tickets 101, 102 and 103. Every payment was approved by a human, David Wallace, logged in on the dashboard. Source: output/audit_trail.json and data/campus_customs_new.db.",
+  "reset": {
+    "time_utc": "2026-11-02T01:55:09+00:00",
+    "via": "backend/reset_db.py",
+    "shop_date": "2026-08-31",
+    "starting_checking_balance": 3400.0
+  },
+  "tickets": [
+    {
+      "id": 101,
+      "type": "customer_order",
+      "subject": "1 white Bulldog tee (CC-TEE-WHITE), size S",
+      "final_status": "resolved",
+      "run_id": "fd1edb471c5c",
+      "model_requests": 19,
+      "total_tokens": 51918,
+      "outcome": "Size S is out of stock (0 on hand). The only apparel vendor, Bulldog Print Co, was blocked by overdue invoice #501 ($840). Oscar requested payment of #501, David Wallace approved it, and the vendor is now unblocked for a 5-day reprint. The customer got a delay note as a draft (never sent).",
+      "agent_contributions": {
+        "boss": "Michael Scott: read the ticket, delegated to Dwight, Oscar and Pam, set status waiting_on_human with a full note. Tools: get_ticket, get_ticket_board, get_cash_position, update_ticket_status.",
+        "inventory": "Dwight Schrute: confirmed 0 in stock (shortfall 1), identified Bulldog Print Co as the apparel vendor blocked by invoice #501 (3 days overdue), and asked Oscar to prepare the payment. Tool: check_stock_and_restock.",
+        "accounting": "Oscar Martinez: created payment request #1 (invoice #501, $840), avoided a duplicate on his second hand-off, and advised paying rent first ($3,400 → $1,000 → $160). Tools: get_cash_position, list_payment_requests, get_ticket, request_payment_approval, assess_payment_request.",
+        "facilities": "Darryl Philbin: not needed.",
+        "customer_service": "Pam Beesly: saved draft #1 to the customer (out of stock, restock not confirmed, will follow up), not sent. Tools: list_drafts, save_draft_message."
+      },
+      "delegations": ["boss → inventory", "boss → accounting", "boss → customer_service", "inventory → accounting"],
+      "drafts": [{"id": 1, "to": "customer", "subject": "Update on your Bulldog tee", "sent": false}],
+      "human_approvals": [
+        {
+          "request_id": 1,
+          "payment_id": 1,
+          "kind": "invoice",
+          "what": "Invoice #501 to Bulldog Print Co",
+          "amount": 840.0,
+          "decision": "approved",
+          "approved_by": "David Wallace",
+          "time_utc": "2026-11-02T02:15:03+00:00",
+          "reason": "Yes, we need this to be paid to keep making money.",
+          "priority_warning_shown": false,
+          "cash_before": 3400.0,
+          "cash_after": 2560.0
+        }
+      ]
+    },
+    {
+      "id": 102,
+      "type": "rent_notice",
+      "subject": "Rent due for the Chapel Street shop (lease 1)",
+      "final_status": "resolved",
+      "run_id": "5520d2876479",
+      "model_requests": 15,
+      "total_tokens": 42836,
+      "outcome": "Rent of $2,400 was due 2026-09-02 (2 days after the shop's today). Oscar requested the rent payment, David Wallace approved it, and the lease's next due date moved to 2026-10-02. The landlord was not contacted.",
+      "agent_contributions": {
+        "boss": "Michael Scott: delegated to Darryl and Oscar, set status waiting_on_human. Tools: get_ticket, get_ticket_board, list_payment_requests, get_cash_position, update_ticket_status.",
+        "inventory": "Dwight Schrute: not needed.",
+        "accounting": "Oscar Martinez: created payment request #2 (rent, $2,400), confirmed cash covers it ($3,400 → $1,000, or $160 with #501), caught the duplicate on his second hand-off. Tools: get_cash_position, check_rent_due, list_payment_requests, request_payment_approval, assess_payment_request.",
+        "facilities": "Darryl Philbin: confirmed lease 1 ($2,400 monthly, due 2026-09-02, 2 days away) and asked Oscar to prepare the rent request; made no landlord contact. Tool: check_rent_due.",
+        "customer_service": "Pam Beesly: not needed."
+      },
+      "delegations": ["boss → facilities", "boss → accounting", "facilities → accounting"],
+      "drafts": [],
+      "human_approvals": [
+        {
+          "request_id": 2,
+          "payment_id": 2,
+          "kind": "rent",
+          "what": "Rent for the Chapel Street shop to Elm City Properties",
+          "amount": 2400.0,
+          "decision": "approved",
+          "approved_by": "David Wallace",
+          "time_utc": "2026-11-02T02:15:18+00:00",
+          "reason": "Yes, we can't work without the office.",
+          "priority_warning_shown": false,
+          "cash_before": 2560.0,
+          "cash_after": 160.0
+        }
+      ]
+    },
+    {
+      "id": 103,
+      "type": "price_override",
+      "subject": "Bulk discount: 20 navy hoodies (CC-HOOD-NAVY), size M",
+      "final_status": "resolved",
+      "run_id": "bf019b8b99fe",
+      "model_requests": 26,
+      "total_tokens": 81498,
+      "outcome": "The team approved a 10% bulk discount ($52.20 each vs. $22 cost: $30.20 margin, 57.9%). Only 8 of 20 are in stock; the 12-unit restock ($264) was deferred because, after rent and #501, cash would be $104 short. No payment was requested. The student group got a draft offer: take 8 now at $52.20 or wait (not sent).",
+      "agent_contributions": {
+        "boss": "Michael Scott: delegated to Dwight, Oscar and Pam, recorded the 10% discount as the business decision, set status in_progress then waiting_on_human. His deeper hand-off to Dwight was stopped by the delegation-depth guardrail. Tools: get_ticket, get_ticket_board, update_ticket_status.",
+        "inventory": "Dwight Schrute: confirmed 8 on hand, 12 short, Bulldog Print Co blocked by #501, restock $264; asked Oscar about funding. Tool: check_bulk_order_pricing.",
+        "accounting": "Oscar Martinez: recommended a modest 10% discount (not deeper), declined to request the $264 restock because it would leave −$104, gave the payment order (rent, then #501), and fact-checked Pam's draft. Tools: get_cash_position, list_payment_requests, check_bulk_order_pricing, assess_payment_request, get_ticket.",
+        "facilities": "Darryl Philbin: not needed.",
+        "customer_service": "Pam Beesly: confirmed facts with Oscar, then saved draft #2 offering $52.20 each, 8 in stock now, no promise on the other 12; not sent. Tools: list_drafts, get_ticket, save_draft_message."
+      },
+      "delegations": ["boss → inventory", "boss → accounting", "inventory → accounting", "boss → customer_service", "customer_service → accounting", "accounting → boss", "boss → inventory (blocked: delegation-depth limit)"],
+      "drafts": [{"id": 2, "to": "customer", "subject": "Your hoodie bulk-price option", "sent": false}],
+      "human_approvals": []
+    }
+  ],
+  "cash": {
+    "starting_checking_balance": 3400.0,
+    "changes": [
+      {"ticket": 101, "payment": "Invoice #501 to Bulldog Print Co", "amount": -840.0, "balance_after": 2560.0},
+      {"ticket": 102, "payment": "Rent, Chapel Street shop", "amount": -2400.0, "balance_after": 160.0},
+      {"ticket": 103, "payment": "None (restock deferred)", "amount": 0.0, "balance_after": 160.0}
+    ],
+    "total_paid": 3240.0,
+    "ending_checking_balance": 160.0,
+    "matches_cash_accounts_table": true,
+    "database_check": "SELECT * FROM cash_accounts → ('checking', 160.0, '2026-08-31'); payments table: 2 rows ($840 + $2,400), both approved_by David Wallace"
+  },
+  "rules_followed": [
+    "Only gpt-6-luna through Portkey for every agent.",
+    "No agent paid anything; both payments were approved by David Wallace after logging in.",
+    "Cash never went negative ($160 at the end); the unaffordable $264 restock was never requested.",
+    "No emails or contact with real customers, landlords, or vendors; both messages are unsent drafts.",
+    "desk.date_today (2026-08-31) used for due dates and overdue checks.",
+    "The database was reset from the untouched original before the run."
+  ]
+}

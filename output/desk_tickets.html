@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Campus Customs Desk Tickets: Expected vs. Actual</title>
+<style>
+  :root {
+    --wall: #dbe8f7;          /* office wall blue */
+    --carpet: #b9cfe9;
+    --paper: #ffffff;
+    --ink: #1e2a4a;           /* dark navy text */
+    --muted: #5a6685;
+    --pink: #e8338a;          /* hot pink */
+    --pink-2: #ff7ab8;
+    --pink-soft: #ffe0ef;
+    --blue: #2c5ea8;          /* Dunder Mifflin blue */
+    --blue-soft: #e6effb;
+    --yellow: #ffe066;        /* sticky note */
+    --yellow-soft: #fff7c7;
+    --line: #d6dfee;
+    --radius: 16px;
+    --hand: "Segoe Print", "Bradley Hand", "Comic Sans MS", cursive;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; color: var(--ink);
+    font: 16px/1.6 "Segoe UI", system-ui, -apple-system, sans-serif;
+    background:
+      linear-gradient(90deg, rgba(255,255,255,.4) 1px, transparent 1px) 0 0 / 48px 48px,
+      linear-gradient(rgba(255,255,255,.4) 1px, transparent 1px) 0 0 / 48px 48px,
+      var(--wall);
+  }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 14px 20px 64px; }
+
+  header {
+    margin-top: 18px; background: var(--paper); border-radius: var(--radius);
+    padding: 22px 26px; display: flex; gap: 26px; align-items: center; flex-wrap: wrap;
+    border-top: 8px solid var(--pink); box-shadow: 0 8px 24px rgba(30,42,74,.12);
+  }
+  .mug {
+    width: 78px; height: 84px; border-radius: 6px 6px 14px 14px; background: var(--paper);
+    color: var(--ink); display: grid; place-items: center; font-weight: 900;
+    font-size: 11px; text-align: center; line-height: 1.15; cursor: pointer;
+    border: 3px solid var(--ink); padding: 6px; position: relative; transition: transform .15s;
+    box-shadow: 5px 5px 0 var(--pink);
+  }
+  .mug::after {
+    content: ""; position: absolute; right: -17px; top: 22px; width: 14px; height: 30px;
+    border: 3px solid var(--ink); border-left: none; border-radius: 0 12px 12px 0;
+  }
+  .mug:hover, .mug:focus-visible { transform: rotate(-6deg) scale(1.05); outline: 3px solid var(--yellow); outline-offset: 4px; }
+  h1 { margin: 0; font-size: 32px; color: var(--blue); }
+  h1 span { color: var(--pink); }
+  .tagline { margin: 2px 0 0; color: var(--muted); font-size: 14px; }
+  .tagline strong { color: var(--ink); background: var(--yellow); padding: 0 6px; border-radius: 4px; }
+  .toast { margin: 12px 4px 0; min-height: 24px; color: var(--pink); font-family: var(--hand); font-size: 16px; }
+
+  /* Yellow sticky note for David Wallace */
+  .summary {
+    margin: 22px 6px 26px; background: var(--yellow-soft); border-radius: 4px;
+    padding: 26px 26px 20px; position: relative; transform: rotate(-.4deg);
+    box-shadow: 0 10px 22px rgba(30,42,74,.18); border-bottom: 6px solid var(--yellow);
+  }
+  .summary::before {
+    content: ""; position: absolute; top: -12px; left: 50%; width: 120px; height: 26px; margin-left: -60px;
+    background: rgba(255,122,184,.55); transform: rotate(2deg);
+  }
+  .summary h2 { margin: 0 0 10px; font-size: 21px; color: var(--pink); }
+  .money { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 14px 0; }
+  .chip { background: var(--paper); border: 2px solid var(--line); border-radius: 12px; padding: 10px 12px; }
+  .chip b { display: block; font-size: 22px; color: var(--blue); }
+  .chip small { color: var(--muted); }
+  .chip.total { border-color: var(--pink); background: var(--pink-soft); }
+  .chip.total b { color: var(--pink); }
+  .chip.short { border-color: #e0a100; background: var(--yellow); }
+  .chip.short b { color: #8a2b00; }
+  .priority { margin: 8px 0 0; padding-left: 22px; }
+  .priority li { margin: 4px 0; }
+
+  /* Folder tabs */
+  [role="tablist"] { display: flex; gap: 6px; flex-wrap: wrap; padding: 0 10px; }
+  [role="tab"] {
+    background: var(--carpet); color: var(--ink); border: none;
+    padding: 10px 18px; border-radius: 12px 12px 0 0; font: inherit; font-weight: 700; cursor: pointer;
+    transition: transform .12s;
+  }
+  [role="tab"]:nth-child(1) { background: var(--pink-soft); }
+  [role="tab"]:nth-child(2) { background: var(--yellow-soft); }
+  [role="tab"]:nth-child(3) { background: var(--blue-soft); }
+  [role="tab"]:hover { transform: translateY(-3px); }
+  [role="tab"][aria-selected="true"] { background: var(--pink); color: #fff; transform: translateY(-3px); }
+  [role="tab"]:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+  [role="tabpanel"] {
+    background: var(--paper); border-radius: var(--radius); padding: 26px;
+    border-top: 6px solid var(--pink); box-shadow: 0 8px 24px rgba(30,42,74,.12);
+  }
+  [role="tabpanel"][hidden] { display: none; }
+
+  h2.ticket { font-size: 24px; margin: 0 0 4px; color: var(--blue); }
+  .facts {
+    margin: 6px 0 20px; background: var(--blue-soft); border-radius: 10px; padding: 10px 14px;
+    border-left: 5px solid var(--blue);
+  }
+  section.block {
+    background: var(--paper); border: 2px solid var(--line); border-radius: var(--radius);
+    padding: 20px 22px; margin-bottom: 18px;
+  }
+  section.block > h3 {
+    display: inline-block; margin: 0 0 14px; font-size: 13px; text-transform: uppercase; letter-spacing: 1.5px;
+    color: #fff; background: var(--pink); padding: 3px 12px; border-radius: 999px;
+  }
+  .first { padding: 12px 16px; background: var(--pink-soft); border-radius: 10px; margin-bottom: 16px; border: 2px dashed var(--pink-2); }
+  .first strong { color: var(--pink); }
+  h4 { margin: 20px 0 8px; font-size: 16px; color: var(--blue); }
+  ol.flow { margin: 0; padding-left: 22px; }
+  ol.flow li { margin: 8px 0; }
+  .arrow { color: var(--pink); font-weight: 900; }
+  .who { font-weight: 700; padding: 1px 9px; border-radius: 999px; font-size: 14px; white-space: nowrap; background: var(--blue-soft); color: var(--blue); }
+  .who.michael { background: var(--blue); color: #fff; }
+  .who.dwight { background: var(--yellow); color: #5a4300; }
+  .who.oscar { background: #d8f0e3; color: #1d5f3e; }
+  .who.darryl { background: #e3e0fb; color: #3c2f8f; }
+  .who.pam { background: var(--pink-soft); color: #9c1659; }
+  .who.david { background: var(--ink); color: var(--yellow); }
+  .skip { color: var(--muted); font-size: 14px; margin: 12px 0 0; font-style: italic; }
+  table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 14px; border-radius: 10px; overflow: hidden; border: 2px solid var(--line); }
+  th, td { text-align: left; padding: 9px 12px; vertical-align: top; }
+  th { background: var(--blue); color: #fff; font-weight: 600; }
+  tbody tr:nth-child(even) td { background: var(--blue-soft); }
+  code { background: var(--pink-soft); color: #9c1659; padding: 1px 7px; border-radius: 6px; font-size: 13px; }
+  .end { margin-top: 18px; padding: 12px 16px; background: var(--yellow-soft); border-left: 6px solid var(--yellow); border-radius: 10px; }
+  .status { display: inline-block; background: var(--pink); color: #fff; font-weight: 700; padding: 1px 10px; border-radius: 999px; font-size: 13px; }
+  .status.alt { background: var(--yellow); color: #5a4300; }
+  .quote { color: var(--blue); font-family: var(--hand); font-size: 16px; margin-top: 14px; }
+  .summary .quote { color: var(--pink); }
+  section.block.actual { border: 3px dashed var(--carpet); background: repeating-linear-gradient(transparent 0 28px, var(--blue-soft) 28px 30px); }
+  section.block.actual > h3 { background: var(--blue); }
+  .actual p { color: var(--muted); margin: 0; font-family: var(--hand); }
+  .later {
+    text-align: center; padding: 70px 20px; border-radius: var(--radius); font-size: 22px; font-weight: 700;
+    color: #fff; background: linear-gradient(180deg, var(--pink), var(--blue));
+  }
+  .later small { display: block; color: #fff; font-size: 14px; font-weight: 400; margin-top: 8px; }
+  footer { margin-top: 30px; color: var(--muted); font-size: 13px; text-align: center; }
+  footer button {
+    background: var(--yellow); border: 2px solid var(--ink); color: var(--ink); font: inherit; font-weight: 700;
+    cursor: pointer; padding: 4px 12px; border-radius: 999px; margin-top: 8px; box-shadow: 3px 3px 0 var(--pink);
+  }
+  footer button:hover, footer button:focus-visible { background: var(--pink-soft); }
+  @media (max-width: 560px) { h1 { font-size: 24px; } [role="tab"] { padding: 8px 10px; } [role="tabpanel"] { padding: 18px; } }
+
+  /* Actual sections (filled after the official Problem 9 run) */
+  section.block.actual.filled { border: 3px solid var(--blue); background: var(--paper); }
+  .actual.filled p { color: var(--ink); font-family: inherit; margin: 0 0 10px; }
+  .actual.filled .runmeta { color: var(--muted); font-size: 13px; }
+  .said { margin: 8px 0; padding: 8px 12px; border-radius: 4px 14px 14px 14px; background: var(--blue-soft); font-size: 14px; }
+  .said b { display: block; font-size: 13px; }
+  .said.michael { background: #e3edfb; } .said.dwight { background: #fff3c4; } .said.oscar { background: #dcf3e7; }
+  .said.darryl { background: #e9e4fb; } .said.pam { background: var(--pink-soft); }
+  .diff { margin-top: 14px; background: var(--yellow-soft); border-left: 6px solid var(--yellow); border-radius: 10px; padding: 10px 14px; }
+  .diff h4 { margin: 0 0 6px; }
+  .diff ul { margin: 0; padding-left: 20px; }
+  .match { color: var(--green, #1f7a52); font-weight: 700; }
+  .miss { color: #b3261e; font-weight: 700; }
+  .cash-table td.num, .cash-table th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .cash-table tr.total td { font-weight: 800; background: var(--yellow-soft); }
+  .cash-table .minus { color: #b3261e; font-weight: 700; }
+  .verified { margin-top: 14px; padding: 12px 16px; border-radius: 10px; background: #d9f4e5; border-left: 6px solid #1f7a52; }
+
+  /* Post-Niagara Reflections */
+  .grade { display: inline-block; font-weight: 800; padding: 1px 10px; border-radius: 999px; font-size: 13px; margin-left: 6px; }
+  .grade.good { background: #d9f4e5; color: #11492f; } .grade.best { background: var(--pink); color: #fff; } .grade.star { background: var(--yellow); color: #5a4300; }
+  .evidence { font-size: 13px; color: var(--muted); }
+  .ref-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+  .ref-card { border: 2px solid var(--line); border-radius: 12px; padding: 14px 16px; background: var(--paper); }
+  .ref-card h4 { margin: 0 0 6px; color: var(--blue); }
+  .ref-card.can { border-top: 6px solid #1f7a52; } .ref-card.cannot { border-top: 6px solid var(--pink); } .ref-card.bonus { border-top: 6px solid var(--yellow); background: var(--yellow-soft); }
+  .ref-card ul { margin: 6px 0 0; padding-left: 18px; font-size: 14px; }
+  .lor { margin-top: 12px; background: var(--yellow-soft); border-radius: 4px; padding: 14px 18px; box-shadow: 0 6px 14px rgba(30,42,74,.12); transform: rotate(-.4deg); font-family: var(--hand); color: var(--ink); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <button class="mug" id="mug" type="button" aria-label="World's Best Boss mug (click me)">WORLD'S<br>BEST<br>BOSS</button>
+    <div>
+      <h1>Campus Customs <span>Desk Tickets</span></h1>
+      <p class="tagline">New Haven Branch &middot; "Limitless paper in a paperless world" &middot; Shop date: <strong>2026-08-31</strong></p>
+    </div>
+  </header>
+  <div class="toast" id="toast" aria-live="polite"></div>
+
+  <div class="summary">
+    <h2>For David Wallace: you can't approve everything</h2>
+    <p>Here is the money I expect the team to ask for across the three tickets, against the <strong>$3,400</strong> in checking (the only cash we have, and cash only goes out):</p>
+    <div class="money">
+      <div class="chip"><small>Invoice #501 (Ticket 101)</small><b>$840</b></div>
+      <div class="chip"><small>Rent, due Sept 2 (Ticket 102)</small><b>$2,400</b></div>
+      <div class="chip"><small>12 hoodies restock (Ticket 103)</small><b>$264</b></div>
+      <div class="chip total"><small>Total requested</small><b>$3,504</b></div>
+      <div class="chip short"><small>vs. cash $3,400</small><b>&minus;$104 short</b></div>
+    </div>
+    <p><strong>Oscar's expected advice on payment priority</strong> (keep the shop open, keep cash positive):</p>
+    <ol class="priority">
+      <li><strong>Rent, $2,400:</strong> keeps us in the building. Cash $3,400 &rarr; <strong>$1,000</strong>.</li>
+      <li><strong>Invoice #501, $840:</strong> overdue, and it unblocks Bulldog Print Co for both tickets 101 and 103. Cash &rarr; <strong>$160</strong>.</li>
+      <li><strong>Hoodie restock, $264:</strong> can't be afforded (would leave &minus;$104). Sell the 8 in stock now and defer the rest.</li>
+    </ol>
+    <p class="quote">"Actually, the math doesn't work. And no, Kevin, 'keleven' doesn't close a $104 gap." &ndash; Oscar</p>
+  </div>
+
+  <div role="tablist" aria-label="Desk tickets">
+    <button role="tab" id="tab-101" aria-controls="panel-101" aria-selected="true">101 &middot; Tee</button>
+    <button role="tab" id="tab-102" aria-controls="panel-102" aria-selected="false" tabindex="-1">102 &middot; Rent</button>
+    <button role="tab" id="tab-103" aria-controls="panel-103" aria-selected="false" tabindex="-1">103 &middot; Hoodies</button>
+    <button role="tab" id="tab-cash" aria-controls="panel-cash" aria-selected="false" tabindex="-1">Cash</button>
+    <button role="tab" id="tab-reflection" aria-controls="panel-reflection" aria-selected="false" tabindex="-1">Post-Niagara Reflections</button>
+  </div>
+
+  <!-- ===================== TICKET 101 ===================== -->
+  <div role="tabpanel" id="panel-101" aria-labelledby="tab-101">
+    <h2 class="ticket">Ticket 101: Customer order, 1 white Bulldog tee, size S</h2>
+    <p class="facts">From the Problem 4 tests: size S has <strong>0</strong> in stock. Bulldog Print Co (apparel, 5-day lead time) is <strong>blocked by unpaid invoice #501, $840, 3 days overdue</strong>.</p>
+
+    <section class="block" aria-labelledby="exp-101">
+      <h3 id="exp-101">Expected</h3>
+      <div class="first"><strong>Michael calls Dwight first</strong> because it's a stock question: do we have the tee in size S?</div>
+
+      <h4>Delegations I expect</h4>
+      <ol class="flow">
+        <li><span class="who">Michael</span> <span class="arrow">&rarr;</span> <span class="who">Dwight</span>: check stock for the white tee in size S.</li>
+        <li><span class="who">Dwight</span> <span class="arrow">&rarr;</span> <span class="who">Oscar</span>: 0 in stock and the only apparel vendor is blocked by #501. Please request payment of #501.</li>
+        <li><span class="who">Oscar</span> <span class="arrow">&rarr;</span> <span class="who">David Wallace</span>: a $840 payment request (a request only, no money moves).</li>
+        <li><span class="who">Michael</span> <span class="arrow">&rarr;</span> <span class="who">Pam</span>: draft a realistic note to the customer that the tee is delayed. It stays a draft and is never sent.</li>
+      </ol>
+      <p class="skip">Not called: <strong>Darryl</strong> (Facilities). There's nothing about the lease or the space here.</p>
+
+      <h4>MCP tools I expect</h4>
+      <table>
+        <thead><tr><th>Tool</th><th>Who</th><th>Why</th></tr></thead>
+        <tbody>
+          <tr><td><code>get_ticket</code></td><td>Michael</td><td>Read ticket 101 and its linked invoice</td></tr>
+          <tr><td><code>check_stock_and_restock</code></td><td>Dwight</td><td>Size S stock, vendor, block status</td></tr>
+          <tr><td><code>get_cash_position</code></td><td>Oscar</td><td>Can cash cover $840?</td></tr>
+          <tr><td><code>list_payment_requests</code></td><td>Oscar</td><td>Avoid a duplicate request</td></tr>
+          <tr><td><code>request_payment_approval</code></td><td>Oscar</td><td>Invoice #501, $840</td></tr>
+          <tr><td><code>save_draft_message</code></td><td>Pam</td><td>Delay note to the customer</td></tr>
+          <tr><td><code>update_ticket_status</code></td><td>Michael</td><td>Set the final status with a note</td></tr>
+        </tbody>
+      </table>
+
+      <div class="end">
+        <strong>Expected end:</strong> <span class="status">waiting_on_human</span> with a <strong>$840</strong> payment request for David Wallace.
+      </div>
+      <p class="quote">"Bears. Beets. Back-orders." &ndash; Dwight, probably</p>
+    </section>
+
+    <section class="block actual filled" aria-labelledby="act-101">
+      <h3 id="act-101">Actual</h3>
+      <p class="runmeta">Official run <code>fd1edb471c5c</code> · 2026-11-02 01:55 UTC · 19 model calls · 51,918 tokens · no limits hit</p>
+      <div class="first"><strong>Michael called Dwight first</strong> (as expected), then Oscar and Pam in the same breath.</div>
+      <h4>Delegations that actually happened</h4>
+      <ol class="flow">
+        <li><span class="who">Michael</span> <span class="arrow">&rarr;</span> <span class="who">Dwight</span>: confirm the size S shortfall and whether the vendor is blocked.</li>
+        <li><span class="who">Michael</span> <span class="arrow">&rarr;</span> <span class="who">Oscar</span>: check cash and prepare a payment request for David if appropriate.</li>
+        <li><span class="who">Michael</span> <span class="arrow">&rarr;</span> <span class="who">Pam</span>: draft a customer update with no promised date.</li>
+        <li><span class="who">Dwight</span> <span class="arrow">&rarr;</span> <span class="who">Oscar</span>: the vendor is blocked by #501, so please prepare that payment request.</li>
+      </ol>
+      <p class="skip">Not called: <strong>Darryl</strong>.</p>
+      <h4>MCP tools used</h4>
+      <table><thead><tr><th>Agent</th><th>MCP tools actually used</th></tr></thead><tbody><tr><td>Michael</td><td><code>get_ticket</code> <code>get_ticket_board</code> <code>get_cash_position</code> <code>update_ticket_status</code></td></tr><tr><td>Dwight</td><td><code>check_stock_and_restock</code></td></tr><tr><td>Oscar</td><td><code>get_cash_position</code> <code>list_payment_requests</code> <code>get_ticket</code> <code>request_payment_approval</code> (invoice #501, $840) <code>assess_payment_request</code></td></tr><tr><td>Pam</td><td><code>list_drafts</code> <code>save_draft_message</code> (draft #1, not sent)</td></tr></tbody></table>
+      <h4>What they said</h4>
+      <div class="said dwight"><b>Dwight</b>Beets don't ship themselves. CC-TEE-WHITE size S is out of stock (0 on hand), leaving a shortfall of 1; Bulldog Print Co is the correct apparel-reprint route but is blocked by open invoice #501 for $840… 3 days overdue.</div>
+      <div class="said oscar"><b>Oscar</b>The ledger is balanced; the timing is the problem. I created pending approval request #1 for invoice #501 ($840)… I recommend rent first: $2,400 due 2026-09-02 leaves $1,000, then invoice #501 leaves $160.</div>
+      <div class="said pam"><b>Pam</b>A tiny tee update, neatly pinned to the board! I drafted a customer note explaining the size S white Bulldog tee is out of stock… nothing was sent.</div>
+      <div class="said michael"><b>Michael</b>A tee-rific little snag! Ticket #101 is waiting on David: size S is out of stock, and Bulldog Print Co is blocked by overdue invoice #501; payment request #1 for $840 is pending…</div>
+      <div class="end"><strong>Actual end:</strong> <span class="status">resolved</span> when the run finished (Michael had set <code>waiting_on_human</code>). Request #1, <strong>$840</strong>, went to David, who <strong>approved it</strong>: "Yes, we need this to be paid to keep making money."</div>
+      <div class="diff"><h4>Expected vs. Actual</h4><ul>
+        <li><span class="match">Matched:</span> Dwight first, Dwight → Oscar, Michael → Pam, Darryl not needed, $840 request for David, delay draft not sent.</li>
+        <li><span class="miss">Different:</span> Michael <em>also</em> asked Oscar directly, so Oscar worked twice. He spotted his own pending request and didn't duplicate it.</li>
+        <li><span class="miss">Different:</span> Extra tools: Michael checked the board and the cash, Pam checked for existing drafts first, and Oscar ran the new <code>assess_payment_request</code> rent-protection check.</li>
+      </ul></div>
+    </section>
+  </div>
+
+  <!-- ===================== TICKET 102 ===================== -->
+  <div role="tabpanel" id="panel-102" aria-labelledby="tab-102" hidden>
+    <h2 class="ticket">Ticket 102: Rent notice, Chapel Street shop</h2>
+    <p class="facts">From the Problem 4 tests: <strong>$2,400</strong> rent is due <strong>2026-09-02</strong>, 2 days after the shop's today. Cash $3,400 covers it, leaving $1,000 (or $160 if #501 is also paid).</p>
+
+    <section class="block" aria-labelledby="exp-102">
+      <h3 id="exp-102">Expected</h3>
+      <div class="first"><strong>Michael calls Darryl first</strong> because rent and the lease are his area.</div>
+
+      <h4>Delegations I expect</h4>
+      <ol class="flow">
+        <li><span class="who">Michael</span> <span class="arrow">&rarr;</span> <span class="who">Darryl</span>: what do we owe on the lease, and when?</li>
+        <li><span class="who">Darryl</span> <span class="arrow">&rarr;</span> <span class="who">Oscar</span>: $2,400 is due Sept 2, two days away. Please request the rent payment.</li>
+        <li><span class="who">Oscar</span> <span class="arrow">&rarr;</span> <span class="who">David Wallace</span>: a $2,400 rent request, after checking cash covers it ($3,400 &rarr; $1,000, or $160 if #501 is also paid).</li>
+      </ol>
+      <p class="skip">Not called: <strong>Dwight</strong> (no stock involved, even though in Scranton he'd be the landlord) and probably <strong>Pam</strong> (the landlord only needs to be paid, not written to).</p>
+
+      <h4>MCP tools I expect</h4>
+      <table>
+        <thead><tr><th>Tool</th><th>Who</th><th>Why</th></tr></thead>
+        <tbody>
+          <tr><td><code>get_ticket</code></td><td>Michael</td><td>Read ticket 102 and its lease</td></tr>
+          <tr><td><code>check_rent_due</code></td><td>Darryl</td><td>Rent amount, due date, cash after rent</td></tr>
+          <tr><td><code>get_cash_position</code></td><td>Oscar</td><td>Rent alongside the other open bills</td></tr>
+          <tr><td><code>list_payment_requests</code></td><td>Oscar</td><td>Avoid a duplicate request</td></tr>
+          <tr><td><code>request_payment_approval</code></td><td>Oscar</td><td>Rent, $2,400</td></tr>
+          <tr><td><code>update_ticket_status</code></td><td>Michael</td><td>Set the final status with a note</td></tr>
+        </tbody>
+      </table>
+
+      <div class="end">
+        <strong>Expected end:</strong> <span class="status">waiting_on_human</span> with a <strong>$2,400</strong> rent request for David Wallace.
+      </div>
+      <p class="quote">"Michael, you've got to pay the rent. That's not a negotiation." &ndash; Darryl</p>
+    </section>
+
+    <section class="block actual filled" aria-labelledby="act-102">
+      <h3 id="act-102">Actual</h3>
+      <p class="runmeta">Official run <code>5520d2876479</code> · 2026-11-02 01:56 UTC · 15 model calls · 42,836 tokens · no limits hit</p>
+      <div class="first"><strong>Michael called Darryl first</strong> (as expected), then Oscar.</div>
+      <h4>Delegations that actually happened</h4>
+      <ol class="flow">
+        <li><span class="who">Michael</span> <span class="arrow">&rarr;</span> <span class="who">Darryl</span>: confirm the lease 1 rent and due date.</li>
+        <li><span class="who">Michael</span> <span class="arrow">&rarr;</span> <span class="who">Oscar</span>: check cash and create a $2,400 rent request for David.</li>
+        <li><span class="who">Darryl</span> <span class="arrow">&rarr;</span> <span class="who">Oscar</span>: prepare the rent payment request and confirm the cash impact.</li>
+      </ol>
+      <p class="skip">Not called: <strong>Dwight</strong> and <strong>Pam</strong>.</p>
+      <h4>MCP tools used</h4>
+      <table><thead><tr><th>Agent</th><th>MCP tools actually used</th></tr></thead><tbody><tr><td>Michael</td><td><code>get_ticket</code> <code>get_ticket_board</code> <code>list_payment_requests</code> <code>get_cash_position</code> <code>update_ticket_status</code></td></tr><tr><td>Darryl</td><td><code>check_rent_due</code></td></tr><tr><td>Oscar</td><td><code>get_cash_position</code> <code>check_rent_due</code> <code>list_payment_requests</code> <code>request_payment_approval</code> (rent, $2,400) <code>assess_payment_request</code></td></tr></tbody></table>
+      <h4>What they said</h4>
+      <div class="said darryl"><b>Darryl</b>The shop's rent calendar is set: Chapel Street lease 1 is $2,400 monthly, due September 2, two days from today, August 31… I made no landlord contact.</div>
+      <div class="said oscar"><b>Oscar</b>Actually, the rent is covered, and no money has moved. Cash is $3,400; I created rent approval request #2 for $2,400… paying it first leaves $1,000, then the already-pending $840 invoice request #1 would leave $160.</div>
+      <div class="said michael"><b>Michael</b>The rent calendar is behaving, though the approval pen is David's! Lease 1 rent is $2,400 due September 2, and request #2 is pending…</div>
+      <div class="end"><strong>Actual end:</strong> <span class="status">resolved</span> when the run finished. Request #2, <strong>$2,400</strong>, went to David, who <strong>approved it</strong>: "Yes, we can't work without the office." <code>leases.next_due</code> moved to 2026-10-02.</div>
+      <div class="diff"><h4>Expected vs. Actual</h4><ul>
+        <li><span class="match">Matched:</span> Darryl first, Darryl → Oscar, Oscar checked cash ($3,400 → $1,000, or $160 with #501), $2,400 rent request, Dwight and Pam not needed.</li>
+        <li><span class="miss">Different:</span> Michael <em>also</em> asked Oscar directly (two hand-offs to Oscar). Oscar caught the duplicate, so only one rent request exists.</li>
+        <li><span class="miss">Different:</span> Oscar double-checked rent himself with <code>check_rent_due</code> and ran <code>assess_payment_request</code>.</li>
+      </ul></div>
+    </section>
+  </div>
+
+  <!-- ===================== TICKET 103 ===================== -->
+  <div role="tabpanel" id="panel-103" aria-labelledby="tab-103" hidden>
+    <h2 class="ticket">Ticket 103: Bulk discount, 20 navy hoodies, size M</h2>
+    <p class="facts">From the Problem 4 tests: only <strong>8</strong> in stock (12 short). Cost $22, list price $58. 15% off = <strong>$49.30</strong> (still $27.30 margin). Restocking 12 costs <strong>$264</strong> from the blocked vendor. After #501 and rent, cash would hit <strong>&minus;$104</strong>.</p>
+
+    <section class="block" aria-labelledby="exp-103">
+      <h3 id="exp-103">Expected</h3>
+      <div class="first"><strong>Michael calls Oscar first</strong> because it's a pricing decision, and the discount can't go below the $22 cost.</div>
+
+      <h4>Delegations I expect</h4>
+      <ol class="flow">
+        <li><span class="who">Michael</span> <span class="arrow">&rarr;</span> <span class="who">Oscar</span>: can we give the club a bulk discount and still make money?</li>
+        <li><span class="who">Oscar</span> <span class="arrow">&rarr;</span> <span class="who">Dwight</span>: confirm the 12-hoodie shortfall and that Bulldog Print Co is blocked.</li>
+        <li><span class="who">Oscar</span> <span class="arrow">&rarr;</span> <span class="who">Michael</span> (report back): about 15% off is safe, but restocking ($264) would push cash to &minus;$104 if #501 and rent are paid too. Here is my payment priority for David Wallace.</li>
+        <li><span class="who">Michael</span> <span class="arrow">&rarr;</span> <span class="who">Pam</span>: draft the discount offer, with no promised delivery date and nothing sent.</li>
+        <li><span class="who">Oscar</span> <span class="arrow">&rarr;</span> <span class="who">David Wallace</span>: maybe a $264 purchase order request, flagged as blocked and short on cash.</li>
+      </ol>
+      <p class="skip">Not called: <strong>Darryl</strong> (Facilities). Hoodies aren't a building problem.</p>
+
+      <h4>MCP tools I expect</h4>
+      <table>
+        <thead><tr><th>Tool</th><th>Who</th><th>Why</th></tr></thead>
+        <tbody>
+          <tr><td><code>get_ticket</code></td><td>Michael</td><td>Read ticket 103</td></tr>
+          <tr><td><code>check_bulk_order_pricing</code></td><td>Oscar</td><td>Margin at 15% off, shortfall, restock cost, cash after everything</td></tr>
+          <tr><td><code>check_stock_and_restock</code></td><td>Dwight</td><td>Confirm 8 on hand and the blocked vendor</td></tr>
+          <tr><td><code>get_cash_position</code></td><td>Oscar</td><td>All bills and pending requests together</td></tr>
+          <tr><td><code>list_payment_requests</code></td><td>Oscar</td><td>See what's already queued for David Wallace</td></tr>
+          <tr><td><code>request_payment_approval</code></td><td>Oscar</td><td>Maybe a $264 purchase order (flagged)</td></tr>
+          <tr><td><code>save_draft_message</code></td><td>Pam</td><td>Discount offer to the student club</td></tr>
+          <tr><td><code>update_ticket_status</code></td><td>Michael</td><td>Set the final status with a note</td></tr>
+        </tbody>
+      </table>
+
+      <div class="end">
+        <strong>Expected end:</strong> <span class="status">waiting_on_human</span> or <span class="status alt">blocked</span>, with David Wallace deciding what to pay first.
+      </div>
+      <p class="quote">"I want people to be afraid of how much they love the discount." &ndash; Michael (Oscar vetoed anything below cost)</p>
+    </section>
+
+    <section class="block actual filled" aria-labelledby="act-103">
+      <h3 id="act-103">Actual</h3>
+      <p class="runmeta">Official run <code>bf019b8b99fe</code> · 2026-11-02 01:57 UTC · 26 model calls · 81,498 tokens · <strong>delegation-depth guardrail hit once</strong></p>
+      <div class="first"><strong>Michael called Dwight first</strong>, then Oscar. I expected Oscar first, since it's a pricing decision.</div>
+      <h4>Delegations that actually happened</h4>
+      <ol class="flow">
+        <li><span class="who">Michael</span> <span class="arrow">&rarr;</span> <span class="who">Dwight</span>: confirm the 8 in stock, the 12-unit shortfall, and the vendor block.</li>
+        <li><span class="who">Michael</span> <span class="arrow">&rarr;</span> <span class="who">Oscar</span>: recommend a safe bulk discount and whether any payment request makes sense.</li>
+        <li><span class="who">Dwight</span> <span class="arrow">&rarr;</span> <span class="who">Oscar</span>: the vendor is blocked by #501, the restock is $264, and cash would end at −$104.</li>
+        <li><span class="who">Michael</span> <span class="arrow">&rarr;</span> <span class="who">Pam</span>: draft the 10% offer, 8 now or wait, no promises.</li>
+        <li><span class="who">Pam</span> <span class="arrow">&rarr;</span> <span class="who">Oscar</span>: confirm the discount and vendor facts before drafting.</li>
+        <li><span class="who">Oscar</span> <span class="arrow">&rarr;</span> <span class="who">Michael</span>: is the 10% discount approved as the business decision? Michael then tried to ask Dwight a 4th level down and was <strong>stopped by the depth limit</strong>.</li>
+      </ol>
+      <p class="skip">Not called: <strong>Darryl</strong>.</p>
+      <h4>MCP tools used</h4>
+      <table><thead><tr><th>Agent</th><th>MCP tools actually used</th></tr></thead><tbody><tr><td>Michael</td><td><code>get_ticket</code> <code>get_ticket_board</code> <code>update_ticket_status</code> (×2)</td></tr><tr><td>Dwight</td><td><code>check_bulk_order_pricing</code></td></tr><tr><td>Oscar</td><td><code>get_cash_position</code> <code>list_payment_requests</code> <code>check_bulk_order_pricing</code> <code>assess_payment_request</code> <code>get_ticket</code></td></tr><tr><td>Pam</td><td><code>list_drafts</code> <code>get_ticket</code> <code>save_draft_message</code> (draft #2, not sent)</td></tr></tbody></table>
+      <h4>What they said</h4>
+      <div class="said dwight"><b>Dwight</b>The shelves hold 8; the other 12 are not conjured by beet magic. Bulldog Print Co is the correct apparel vendor, but invoice #501 ($840, 3 days overdue) blocks shipment.</div>
+      <div class="said oscar"><b>Oscar</b>Actually, the numbers support a modest 10% bulk discount, not a deeper cut: that leaves a $30.20/unit margin. No new payment request is prudent now; the pending rent and overdue invoice leave just $160, less than the $264 needed to restock.</div>
+      <div class="said pam"><b>Pam</b>A little hoodie math, neatly folded! I saved a customer draft offering the approved $52.20 each price, noting 8 are in stock… It offers taking 8 now or waiting for confirmation.</div>
+      <div class="said michael"><b>Michael</b>Hoodie math: the deal is stitched, but the stock isn't! I approved a 10% bulk discount at $52.20 each ($30.20 margin per hoodie); only 8 of 20 are in stock…</div>
+      <div class="end"><strong>Actual end:</strong> <span class="status">resolved</span> when the run finished (Michael had set <code>waiting_on_human</code>). <strong>No new payment request:</strong> Oscar deferred the $264 restock because it would leave cash $104 short. Draft #2 offers 8 hoodies now at $52.20.</div>
+      <div class="diff"><h4>Expected vs. Actual</h4><ul>
+        <li><span class="match">Matched:</span> margin protected (never below $22 cost), Oscar flagged the −$104 restock gap, Michael → Pam for a no-promise offer, Darryl not needed, David decides what to pay.</li>
+        <li><span class="miss">Different:</span> Michael called <strong>Dwight first</strong>, not Oscar, and the hand-off ran <strong>Dwight → Oscar</strong>, not Oscar → Dwight.</li>
+        <li><span class="miss">Different:</span> The discount was <strong>10% ($52.20)</strong>, not the ~15% I guessed. More conservative, more profit per hoodie.</li>
+        <li><span class="miss">Different:</span> <strong>No $264 purchase order was requested</strong>. Oscar judged it imprudent, so nothing new waited for David.</li>
+        <li><span class="miss">Different:</span> Extra hand-offs (Pam → Oscar, Oscar → Michael) and the delegation-depth guardrail stopped one more. The busiest run: 26 model calls.</li>
+        <li><span class="miss">Different:</span> Dwight used <code>check_bulk_order_pricing</code> instead of <code>check_stock_and_restock</code>. Both show the vendor block.</li>
+      </ul></div>
+    </section>
+  </div>
+
+  <!-- ===================== CASH ===================== -->
+  <div role="tabpanel" id="panel-cash" aria-labelledby="tab-cash" hidden>
+    <h2 class="ticket">Cash: the official Problem 9 run</h2>
+    <p class="facts">Working database reset from the original at 2026-11-02 01:55 UTC (recorded in <code>audit_trail.json</code>). Shop date for every payment: <strong>2026-08-31</strong> (<code>desk.date_today</code>). Cash only goes out. Every payment was approved by a human, <strong>David Wallace</strong>, logged in on the dashboard.</p>
+    <section class="block">
+      <h3>Itemized checking balance</h3>
+      <table class="cash-table">
+        <thead><tr><th>Step</th><th>What and why</th><th>Approved</th><th class="num">Change</th><th class="num">Checking balance</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Start</strong></td><td>After the reset (<code>cash_accounts.checking</code>)</td><td>n/a</td><td class="num">n/a</td><td class="num"><strong>$3,400.00</strong></td></tr>
+          <tr><td><strong>Ticket 101</strong> (tee)</td><td>Paid <strong>invoice #501 to Bulldog Print Co</strong> (request #1, payment #1). It was 3 days overdue and blocked the vendor from restocking the size S tee. Invoice marked <code>paid</code>.</td><td>David Wallace, 02:15:03 UTC: "Yes, we need this to be paid to keep making money."</td><td class="num minus">−$840.00</td><td class="num">$2,560.00</td></tr>
+          <tr><td><strong>Ticket 102</strong> (rent)</td><td>Paid <strong>rent for the Chapel Street shop</strong> to Elm City Properties (request #2, payment #2), due 2026-09-02. Lease <code>next_due</code> moved to 2026-10-02.</td><td>David Wallace, 02:15:18 UTC: "Yes, we can't work without the office."</td><td class="num minus">−$2,400.00</td><td class="num">$160.00</td></tr>
+          <tr><td><strong>Ticket 103</strong> (hoodies)</td><td><strong>No payment.</strong> Oscar deferred the 12-hoodie restock ($264 = 12 × $22) because it would leave −$104. The shop sells the 8 in stock at 10% off.</td><td>n/a (nothing requested)</td><td class="num">$0.00</td><td class="num">$160.00</td></tr>
+          <tr class="total"><td><strong>End</strong></td><td>Ending checking balance</td><td></td><td class="num minus">−$3,240.00</td><td class="num">$160.00</td></tr>
+        </tbody>
+      </table>
+      <div class="verified">
+        <strong>✅ Math check:</strong> $3,400.00 − $840.00 − $2,400.00 − $0.00 = <strong>$160.00</strong>. Total paid $3,240.00 = the sum of the <code>payments</code> table (2 rows, both <code>approved_by = David Wallace</code>).<br>
+        <strong>✅ Matches the database:</strong> <code>cash_accounts</code> → <code>('checking', 160.0, '2026-08-31')</code>. The dashboard's checking balance also shows $160.00.
+      </div>
+      <p class="quote">"Actually, that's exactly how I'd have done it. Rent and the vendor are paid, cash is positive, and the hoodies can wait." &ndash; Oscar</p>
+    </section>
+    <section class="block">
+      <h3>Order of approvals and rent protection</h3>
+      <p>Oscar recommended <strong>rent first</strong> ($3,400 → $1,000), then <strong>#501</strong> (→ $160). David approved #501 first, then rent. Both orders keep rent covered, because $2,560 is still more than the $2,400 rent. So the new <strong>rent-protection flag</strong> correctly stayed quiet. If the $264 restock had been approved before rent, Oscar's warning would have stopped it until David ticked "I understand, pay anyway." That case was tested on a throwaway copy of the database.</p>
+    </section>
+  </div>
+
+  <!-- ===================== REFLECTION ===================== -->
+  <div role="tabpanel" id="panel-reflection" aria-labelledby="tab-reflection" hidden>
+    <h2 class="ticket">Post-Niagara Reflections 💍🚤</h2>
+    <p class="facts">Back from Jim and Pam's wedding with the receipts. Every point below is backed by this page's ticket tabs, the Cash tab, <code>resolved_tickets.json</code> and <code>audit_trail.json</code> from the official run (runs <code>fd1edb471c5c</code>, <code>5520d2876479</code>, <code>bf019b8b99fe</code>).</p>
+
+    <section class="block">
+      <h3>1. How did the agents perform?</h3>
+      <p><strong>Overall, the agents did a good job.</strong> All three tickets were resolved. No agent paid anything (both payments were approved by me as David Wallace), nothing was emailed (Pam's two customer messages are unsent drafts), and cash ended at <strong>$160.00, never negative</strong>. The whole run took 60 model calls and about 176K tokens on <code>gpt-6-luna</code>.</p>
+      <table>
+        <thead><tr><th>Ticket</th><th>My grade</th><th>Why</th></tr></thead>
+        <tbody>
+          <tr><td><strong>101</strong> tee</td><td><span class="grade good">Good, one small breakdown</span></td><td>The right answer: size S has 0 in stock, the vendor is blocked by #501, and request #1 for $840 went to David. But <strong>Oscar worked the same task twice</strong>: Michael asked him directly, and Dwight also routed to him. Luckily Oscar noticed request #1 already existed and didn't duplicate it (<em>"Invoice #501 already has pending approval request #1… so no duplicate was created"</em>). Still, it cost extra tokens and calls: <strong>19 model calls, ~52K tokens</strong>. My fix: Michael shouldn't ask someone a teammate is already routing to. That's better coordination between the agents. <span class="evidence">(Ticket 101 tab → Actual)</span></td></tr>
+          <tr><td><strong>102</strong> rent</td><td><span class="grade best">Best run</span></td><td>No major issues: <strong>15 calls, ~43K tokens</strong>, Darryl → Oscar → <strong>one $2,400 request</strong> (#2), and no landlord contact (<em>"I made no landlord contact"</em> – Darryl). The same double-ask to Oscar happened here too, but it was cheap and Oscar again caught the duplicate. <span class="evidence">(Ticket 102 tab)</span></td></tr>
+          <tr><td><strong>103</strong> hoodies</td><td><span class="grade star">⭐ Oscar's finest hour</span></td><td>It didn't go as I expected, but I'm highly impressed with Oscar. The foundations I built for him made him a very business-savvy accountant. He suggested a <strong>lower discount, 10% ($52.20, a $30.20 margin)</strong>, which leaves room to negotiate with the client. He followed the rules so well that he <strong>didn't request the $264 restock</strong>, which would have left us <strong>$104 short</strong>, so the only requests that reached David were mission-critical: rent and #501. That's the type of employee you want. It was also the most expensive run (<strong>26 calls, ~81K tokens</strong>), and the <strong>delegation-depth guardrail</strong> stopped one extra hand-off. <span class="evidence">(Ticket 103 tab; resolved_tickets.json)</span></td></tr>
+        </tbody>
+      </table>
+      <div class="lor"><strong>Letter of recommendation, Yale SOM admissions:</strong> I recommend Oscar Martinez without reservation. Faced with a bulk discount request and a tight cash position, he protected the margin, refused to overspend, and sent his manager only the payments that kept the business alive. In his own words: <em>"Actually, the numbers support a modest 10% bulk discount, not a deeper cut… No new payment request is prudent now."</em> He will make an excellent EMBA. – David Wallace</div>
+    </section>
+
+    <section class="block">
+      <h3>2. Actual vs. Expected</h3>
+      <p>Each ticket tab has my untouched Expected plan next to the Actual run and an Expected-vs-Actual box. In short:</p>
+      <ul>
+        <li><strong>101 and 102 matched</strong> my first calls (Dwight on 101, Darryl on 102) and hand-offs (Dwight → Oscar, Darryl → Oscar), except for the <strong>extra Michael → Oscar call</strong> on both.</li>
+        <li><strong>103 was different:</strong> Michael called <strong>Dwight first</strong> (I expected Oscar), the hand-off ran <strong>Dwight → Oscar</strong> instead of Oscar → Dwight, the discount was <strong>10%</strong> instead of my 15% guess, and there was <strong>no restock request</strong>. There were also two hand-offs I never predicted: Pam → Oscar to fact-check her draft, and Oscar → Michael to confirm the discount.</li>
+        <li><strong>Payment order:</strong> I approved #501 before rent, the reverse of Oscar's advice (rent first). The <strong>rent-protection flag correctly stayed quiet</strong> because $2,560 still covered the $2,400 rent. <span class="evidence">(Cash tab)</span></li>
+      </ul>
+    </section>
+
+    <section class="block">
+      <h3>3. What would have been simpler as one agent with tools?</h3>
+      <p><strong>Ticket 102.</strong> Oscar could have handled it alone without Darryl, since it was mostly about paying a bill. Oscar already has <code>check_rent_due</code>, and he <strong>actually ran it himself</strong> during the run, so Darryl's <code>check_rent_due</code> call was a repeat. One agent would have needed only a few calls (read the ticket, check rent, check cash, request payment) instead of <strong>15</strong>. The multi-agent setup earned its keep on 101 and 103, where stock, money and customer messages really are different jobs. On 102 it was mostly overhead.</p>
+      <p>Honestly, I didn't use Darryl much: one call on 102, and he sat out 101 and 103 (<em>Pretzel Day Champion</em> and <em>The Toby Flenderson Award</em> at the Dundies). I'd build out his role going forward (see storage below).</p>
+    </section>
+
+    <section class="block">
+      <h3>4. Three new problems this team <em>could</em> solve today</h3>
+      <div class="ref-grid">
+        <div class="ref-card can"><h4>🧢 An in-stock order</h4>For example, 2 Yale caps (<code>CC-HAT-BLUE</code>, 40 on hand).
+          <ul><li>Dwight: <code>check_stock_and_restock</code> confirms stock.</li><li>Pam: <code>save_draft_message</code> drafts the confirmation.</li><li>Michael: <code>update_ticket_status</code> resolves it. No money needed.</li></ul>
+          <p class="evidence">Caveat: no tool subtracts sold items from inventory yet, but a one-time order like this could still be handled.</p></div>
+        <div class="ref-card can"><h4>⚡ Paying an electric bill</h4>If the bill is entered as an open invoice, it's the same flow as #501:
+          <ul><li>Oscar: <code>request_payment_approval</code> (kind = invoice).</li><li>Rent protection: <code>assess_payment_request</code> checks it against rent.</li><li>David approves it on the dashboard.</li></ul></div>
+        <div class="ref-card can"><h4>📊 A basic direct cash flow statement</h4>Oscar can list every paid and pending payment plus the cash position (<code>list_payment_requests</code>, <code>get_cash_position</code>):
+          <ul><li>Start $3,400 → −$840 (#501) → −$2,400 (rent) → <strong>$160</strong> end.</li><li>Plus what's still coming due: the lease's next rent is <strong>$2,400 on 2026-10-02</strong>, which $160 can't cover.</li></ul>
+          <p class="evidence">Cash out only, since no revenue is modeled.</p></div>
+      </div>
+    </section>
+
+    <section class="block">
+      <h3>5. Three new problems this team <em>could not</em> solve, and what I'd add</h3>
+      <div class="ref-grid">
+        <div class="ref-card cannot"><h4>📦 Inventory storage space</h4>Darryl could run storage: how much room is there for new stock? That would have added an angle to ticket 103: is there space in Aisle A for 12 more hoodies?
+          <ul><li><strong>Add:</strong> a storage capacity table (aisle, capacity, used).</li><li><strong>Tools:</strong> <code>check_storage_capacity</code>, <code>reserve_space</code>, and stock in/out tools to add and subtract inventory, which also grows order fulfillment.</li><li><strong>Agent:</strong> Darryl, finally with a real warehouse job.</li></ul></div>
+        <div class="ref-card cannot"><h4>💵 Accounts receivable (money coming in)</h4>Our tools only let cash go out, so we can't record the student group paying for its 8 hoodies (<strong>8 × $52.20 = $417.60</strong>). That would have <strong>legitimately closed the $104 restock gap</strong>, no heist required.
+          <ul><li><strong>Add:</strong> a receivables table.</li><li><strong>Tool:</strong> <code>record_customer_payment</code>, verified by a human before cash goes up.</li><li><strong>Agent:</strong> Oscar takes on collections.</li></ul></div>
+        <div class="ref-card cannot"><h4>🤝 Onboarding a new vendor or client</h4>No tool can add a vendor. Bulldog Print Co is our only apparel supplier, so <strong>one unpaid invoice (#501) blocked both 101 and 103</strong>.
+          <ul><li><strong>Tool:</strong> <code>draft_new_vendor</code>, where an agent drafts the vendor and David approves it.</li><li><strong>Plus:</strong> vetting checks (specialty, lead time, payment terms) before anyone is added.</li></ul></div>
+        <div class="ref-card bonus"><h4>🔥🍷 Bonus, because it's funny</h4>The team could not handle <strong>Dwight's fire drill</strong> or <strong>Michael's dinner party</strong>. There are no safety tools, no event budget and, most importantly, <strong>no Jan</strong>.</div>
+      </div>
+      <p class="quote">"Would I rather be feared or loved? Easy. Both. And reflected upon." – Michael</p>
+    </section>
+  </div>
+
+  <footer>
+    Campus Customs Multi-Agent Operations &middot; Homework 5 &middot; human approver: David Wallace<br>
+    <button type="button" id="stapler">Where's my stapler?</button>
+  </footer>
+</div>
+
+<script>
+  // Accessible tabs: click or use the arrow keys.
+  const tabs = [...document.querySelectorAll('[role="tab"]')];
+  function select(tab) {
+    tabs.forEach(t => {
+      const on = t === tab;
+      t.setAttribute('aria-selected', on);
+      t.tabIndex = on ? 0 : -1;
+      document.getElementById(t.getAttribute('aria-controls')).hidden = !on;
+    });
+    tab.focus();
+  }
+  tabs.forEach((t, i) => {
+    t.addEventListener('click', () => select(t));
+    t.addEventListener('keydown', e => {
+      if (e.key === 'ArrowRight') select(tabs[(i + 1) % tabs.length]);
+      if (e.key === 'ArrowLeft') select(tabs[(i - 1 + tabs.length) % tabs.length]);
+    });
+  });
+
+  // Color-code each character's name chip.
+  const people = {Michael: 'michael', Dwight: 'dwight', Oscar: 'oscar', Darryl: 'darryl', Pam: 'pam', 'David Wallace': 'david'};
+  document.querySelectorAll('.who').forEach(w => { const c = people[w.textContent.trim()]; if (c) w.classList.add(c); });
+
+  // Easter eggs.
+  const toast = document.getElementById('toast');
+  const michael = [
+    "\"Would I rather be feared or loved? Easy. Both.\"",
+    "\"I'm not superstitious, but I am a little stitious.\"",
+    "\"I declare... BANKRUPTCY!\" (Oscar: \"That's not how it works.\")",
+    "\"Sometimes I'll start a sentence and I don't even know where it's going.\"",
+    "\"I am Beyoncé, always.\"",
+  ];
+  let clicks = 0;
+  document.getElementById('mug').addEventListener('click', () => {
+    toast.textContent = "Michael: " + michael[clicks++ % michael.length];
+  });
+  document.getElementById('stapler').addEventListener('click', () => {
+    toast.textContent = "Dwight: It's in the Jell-O again. PAM! (Pam: I have no idea what you're talking about.)";
+  });
+  console.log("%cIdentity theft is not a joke, Jim! Millions of families suffer every year.",
+              "color:#ff4fa3;font-weight:bold");
+</script>
+</body>
+</html>
